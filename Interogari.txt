@@ -1,0 +1,88 @@
+SELECT p.Nume AS Pacient, p.Prenume, pr.Data_Programare, d.Nume AS Doctor, d.Prenume AS PrenumeDoctor
+FROM pacient p
+JOIN programari pr ON p.PacientID = pr.PacientID
+JOIN doctor d ON pr.DoctorID = d.DoctorID
+WHERE p.PacientID = 1; -- Înlocuiește 1 cu ID-ul pacientului dorit
+
+
+SELECT d.Nume AS Doctor, d.Prenume, d.Specializare, d.Telefon
+FROM programari pr
+JOIN doctor d ON pr.DoctorID = d.DoctorID
+WHERE pr.PacientID = 1; -- Înlocuiește 1 cu ID-ul pacientului dorit
+
+
+SELECT s.Denumire, s.Pret, cs.Cantitate
+FROM pacient p
+JOIN programari pr ON p.PacientID = pr.PacientID
+JOIN consultatii c ON pr.ProgramareID = c.ProgramareID
+JOIN consultatii_servicii cs ON c.ConsultatieID = cs.ConsultatieID
+JOIN servicii s ON cs.ServiciuID = s.ServiciuID
+WHERE p.PacientID = 1; -- Înlocuiește 1 cu ID-ul pacientului dorit
+
+
+SELECT c.Diagnostic, c.Data, c.Ora
+FROM pacient p
+JOIN programari pr ON p.PacientID = pr.PacientID
+JOIN consultatii c ON pr.ProgramareID = c.ProgramareID
+WHERE p.PacientID = 1; -- Înlocuiește 1 cu ID-ul pacientului dorit
+
+
+SELECT c.Tratament, c.Diagnostic, c.Data, c.Ora
+FROM pacient p
+JOIN programari pr ON p.PacientID = pr.PacientID
+JOIN consultatii c ON pr.ProgramareID = c.ProgramareID
+WHERE p.PacientID = 1; -- Înlocuiește 1 cu ID-ul pacientului dorit
+
+
+SELECT p.Nume, p.Prenume, p.Adresa, p.Telefon, p.Email
+FROM pacient p
+JOIN programari pr ON p.PacientID = pr.PacientID
+WHERE pr.Data_Programare = '2025-01-01'; -- Înlocuiește cu data dorită
+
+
+SELECT p.Nume, p.Prenume, 
+       (SELECT SUM(s.Pret * cs.Cantitate)
+        FROM programari pr
+        JOIN consultatii c ON pr.ProgramareID = c.ProgramareID
+        JOIN consultatii_servicii cs ON c.ConsultatieID = cs.ConsultatieID
+        JOIN servicii s ON cs.ServiciuID = s.ServiciuID
+        WHERE pr.PacientID = p.PacientID) AS PretTotal
+FROM pacient p
+WHERE p.PacientID = 1; -- Înlocuiește 1 cu ID-ul pacientului dorit
+
+
+SELECT p.Nume, p.Prenume
+FROM pacient p
+WHERE p.PacientID = (
+    SELECT pr.PacientID
+    FROM programari pr
+    WHERE pr.Data_Programare BETWEEN '2025-01-01' AND '2025-01-07' -- Intervalul săptămânii
+    GROUP BY pr.PacientID
+    ORDER BY COUNT(pr.ProgramareID) DESC
+    LIMIT 1
+);
+
+
+SELECT d.Nume, d.Prenume
+FROM doctor d
+WHERE d.DoctorID = (
+    SELECT pr.DoctorID
+    FROM programari pr
+    WHERE pr.Data_Programare BETWEEN '2025-01-01' AND '2025-01-07' -- Intervalul săptămânii
+    GROUP BY pr.DoctorID
+    ORDER BY COUNT(pr.ProgramareID) DESC
+    LIMIT 1
+);
+
+
+SELECT s.Denumire
+FROM servicii s
+WHERE s.ServiciuID = (
+    SELECT cs.ServiciuID
+    FROM consultatii_servicii cs
+    JOIN consultatii c ON cs.ConsultatieID = c.ConsultatieID
+    WHERE c.Data BETWEEN '2025-01-01' AND '2025-01-07' -- Intervalul săptămânii
+    GROUP BY cs.ServiciuID
+    ORDER BY COUNT(cs.ServiciuID) DESC
+    LIMIT 1
+);
